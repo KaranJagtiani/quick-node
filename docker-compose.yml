@@ -1,0 +1,38 @@
+version: "3"
+services:
+  db:
+    container_name: rapid-dev-postgres
+    image: postgres:15.0-alpine3.16
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./docker-setup/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5428:5432
+
+  nodets:
+    container_name: rapid-dev-nodets
+    build:
+      context: .
+      dockerfile: ./docker-setup/Dockerfile
+    environment:
+      - PORT=8081
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=rocketship
+      - DB_PASSWORD=airbus737
+      - DB_NAME=quicknode
+      - JWT_SECRET=jwtsecret
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8081:8081
+    depends_on:
+      - db
+
+networks:
+  default:
+    name: rapid-dev-network
